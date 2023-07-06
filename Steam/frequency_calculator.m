@@ -3,12 +3,12 @@ sbsc= par.sb ./ par.sc;
 sbsl= par.sb ./ par.sl;
 Hx = par.H-par.xbar;
 sig_area = 5e-4; %uncertainty in measures of area, 5 cm^2
-sig_len = 2e-2; %uncertainty in measures of length, 1 cm
-
+sig_len = 1.5*1e-2; %uncertainty in measures of length, 1 cm
+sig_sc= 1e-4;
 k0 = -par.Vol_0.*par.FdPdv(par.Vol_0);
 
 xi0 = par.Fdudp(par.Vol_0);
-delta = 1e-3;
+delta = sqrt(eps( (par.H-par.xbar)*par.sb) );
 dxidx0 = (par.Fdudp(par.sb*(par.H-par.xbar-delta))-par.Fdudp(par.sb*(par.H-par.xbar+delta) )) /(2*delta);
 %dkdx = dp/dvdx * v + dp/dv * dv/dx
 dpdvdx0v0  = -par.Vol_0*(par.FdPdv(par.sb*(par.H-par.xbar-delta))-par.FdPdv(par.sb*(par.H-par.xbar+delta) ) ) /(2*delta);
@@ -28,7 +28,7 @@ angfreq2 = (B+F)/A;
 angfreq =sqrt(angfreq2);
 freq =angfreq/(2*pi);
 
-sig_SbSc = par.sb/par.sc *sqrt((sig_area/par.sb)^2 +(sig_area/par.sc)^2);
+sig_SbSc = par.sb/par.sc *sqrt((sig_area/par.sb)^2 +(sig_sc/par.sc)^2);
 sig_gbc = par.g*sig_SbSc;
 sig_bcy = par.ybar*(par.sb/par.sc)*sqrt( (sig_SbSc/(par.sb/par.sc))^2 + sig_len^2*par.ybar^-2 );
 sig_A = sqrt(sig_len^2+sig_bcy^2);

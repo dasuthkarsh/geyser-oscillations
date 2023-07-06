@@ -1,5 +1,5 @@
 format long;
-clear;
+%clear;
 %close all;
 
 addpath XSteam_Matlab_v2.6\;
@@ -14,7 +14,6 @@ end
 opts = detectImportOptions(filename);
 opts.SelectedVariableNames = [1,2,6,8,14];
 expdata = readmatrix(filename,opts);
-
 fprintf('Using new lab dimensions. \n')
 par.sb = 1852e-4;
 par.sl = 1; %cross-section of lateral connector in m^2
@@ -30,14 +29,14 @@ if strcmp(filename,'cold-water-freq-2in-filtered.csv')
     freqscale=2;
 elseif strcmp(filename,'cold-water-freq-filtered.csv')
     par.sc = 5.07e-4; % cross-section of (1-inch) column in m^2
-    exp_xbar = (expdata(1:27,1)-0)*1e-2;
-    exp_ybar = (expdata(1:27,2)-0)*1e-2+par.H;
+    exp_xbar = (expdata(:,1)-0)*1e-2;
+    exp_ybar = (expdata(:,2)-0)*1e-2+par.H;
     %exp_xbar(28:length(expdata))=expdata(28:end,1)*1e-2-correction;
     freqscale=1;
 end
-exp_err = expdata(1:27,5)*2*pi;
-exp_amplitude = expdata(1:27,3);
-exp_frequencies = expdata(1:27,4)/(2*pi);
+exp_err = expdata(:,5)*2*pi;
+exp_amplitude = expdata(:,3);
+exp_frequencies = expdata(:,4)/(2*pi);
 delxys = exp_ybar-exp_xbar;
 par.g = 9.81;% gravitational acceleration in m*s^-2
 par.rho = 1000; % water density in kg*m^-3
@@ -71,7 +70,7 @@ for j =1:length(delxys)
         elseif k>length(xbars)
             labfrequencies(j,k-length(xbars))=coldfreq(par);
             %propagated_errors(j,k-length(xbars)) = 0.01; %garbage value
-            propagated_errors(j,k-length(xbars)) = propagation(par,0);
+            propagated_errors(j,k-length(xbars)) = 0.2*propagation(par,0);
         end
     end
 end
@@ -95,7 +94,7 @@ p2(1).MarkerSize = 15;
 
 cmap = colormap('jet'); % retrieve the jet colormap
 % map delxy onto colors
-color_variable = delxys*1e2;
+color_variable = exp_xbar*1e2;
 colors = interp1(linspace(min(color_variable),max(color_variable),length(cmap)),cmap,color_variable);
 caxis([min(color_variable) max(color_variable)])
 
@@ -103,7 +102,7 @@ scatter(labfrequencies(1,:),exp_frequencies,[],colors, 'filled');
 a=colorbar();
 ylabel(a, '$\bar y - \bar x$ (cm)','fontsize',14,'interpreter','latex', 'Rotation',90)
 
-xave=linspace(0.4,.65*freqscale,51); plot(xave,xave,'--');
+xave=linspace(0.4,1.5,51); plot(xave,xave,'--');
 xlabel('Predicted Frequency (Hz)','fontsize',14,'interpreter','latex')
 ylabel('Observed Frequency (Hz)','fontsize',14,'interpreter','latex')
 title('Predicted vs Observed Frequency, Cold Water','fontsize',14,'interpreter','latex')

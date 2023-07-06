@@ -15,22 +15,29 @@ par.Pa0 =1e5; %atmospheric pressure at equilibrium in Pa
 par.H = 7;
 par.sl=1;
 par.L=0;
-nx=10;
+
+nx=100;
 delta = 1e-6;%bar
-% xx = linspace(4,6.999,nx);
+%xx = linspace(4,6.999,nx);
 xx = logspace(-3.5,log10(par.H),nx);% actually H-xbar
 ny = 11;
-yy = linspace(0,30,ny);
+yy = linspace(14,16,ny);
 
 freq = zeros(ny,nx);
+prevprog=0;
 for a=1:nx
     for j=1:ny
-        if( yy(j) >= xx(a) )
-            par.xbar =-xx(a)+par.H;
-            par.ybar =yy(a);
-            par.delxy=par.ybar-par.xbar;
-            par.Vol_0 = par.sb*(par.xbar); %initial (equilibrium) volume in m^3
-            P_0 = par.rho*par.g*(par.delxy)+par.Pa0; %initial pressure in (Pascal)
+        if( yy(j) >= par.H- xx(a) )
+            prog=floor(a/nx*100);
+            if (prog>prevprog)
+                fprintf("Progress = %d percent\n",prog);
+            end
+            prevprog=prog;
+            par.xbar = par.H-xx(a);
+            par.ybar = yy(j);
+            par.delxy = par.ybar-par.xbar;
+            par.Vol_0 = par.sb*(par.H-par.xbar); %initial (equilibrium) volume in m^3
+            P_0 = par.rho*par.g*(par.delxy) + par.Pa0; %initial pressure in (Pascal)
             xv = 1 - 1e-2;
             sv=XSteam('sV_p',P_0/1e5)*1e3; %specific entropy J*kg^-1*degC^-1
             sl=XSteam('sL_p',P_0/1e5)*1e3; %specific entropy J*kg^-1*degC^-1
@@ -38,7 +45,7 @@ for a=1:nx
             V0 = XSteam('V_ps',P_0/1e5,s/1e3); % volume per unit mass
             par.m = par.Vol_0 / V0; %vapor mass in kg
             
-            P=linspace((P_0-9e4)/1e5,(P_0+9e4)/1e5,51); %Range of pressure for lookup table (bar)
+            P=linspace((P_0-1.6e5)/1e5,(P_0+2e6)/1e5,101); %Range of pressure for lookup table (bar)
             vV=zeros(1,length(P));  % vapor volume (m^3)
             du_dp = zeros(1,length(P)); %dU/dP in (kJ/K/Pa)
             dv_dp = zeros(1,length(P)); %dV/dP in (m^3/Pa)
@@ -64,6 +71,7 @@ contourf(xx,yy,log10(freq),1024,'Color','none');
 hold on
 hcb=colorbar;
 contour(xx,yy,log10(freq),log10(1.0)*[1 1],'Color','k');
+%contour(xx,yy,log10(freq),log10(0.4)*[1 1],'Color','b');
 set(gca,'FontSize',16);
 xlabel('$H-\bar{x}$ (m)','Interpreter','latex');
 ylabel('$\bar{y}$ (m)','Interpreter','latex');
@@ -74,16 +82,10 @@ set(gca,'XScale','log');
 % saveas(gcf,'ofg_application.svg');
 %export_fig('ofg_application.eps');
 
-
 %% Now, solve the ODE directly for ofg.
-p.Sb=Sb;
-p.Sc=Sc;
-p.ybar = 20;
-p.H = 7;
-p.xbar = p.H-.01;
-p.rho = 1000;
-p.g = 10;
-p.patm=1e5;
+par.ybar = 20;
+par.xbar = par.H-1e-3;
+par.delxy=par.ybar-par.xbar;
 p.p0 = p.patm+p.rho*p.g*(p.ybar-p.xbar);
 p.Sl = 1;
 p.Ll = 0;
@@ -93,12 +95,13 @@ p.Fa=-1.0;
 
 time=     [0 20]; % starting and ending times for time integration
 
-% define initial conditions
-xx0=zeros(2,1);
-xx0(1)=p.Fa * p.Sc/p.Sb;% x
-xx0(2)=0.0; % dx/dt
 
-options=odeset('MaxStep',1e-3);
+% define initial conditions
+% xx0=zeros(2,1);
+% xx0(1)=p.Fa * p.Sc/p.Sb;% x
+% xx0(2)=0.0; % dx/dt
+% 
+% options=odeset('MaxStep',1e-3);
 odefun = @(t,x) sohn_model3_dimensional(t,x,p); % use anonymous function to pass parameters as argument
 % solve the problem
 [t,y] = ode45( odefun, time, xx0, options);

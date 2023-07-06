@@ -6,8 +6,8 @@ x= zeros(1,j);
 v=zeros(1,j);
 z = [x;v];
 %% Initial Conditions
-assert(numPar.x0<(par.H-par.xbar)) %check that water cannot overflow
-assert( (par.ybar - par.sb/par.sc*abs(numPar.x0)) > 0.0) % assert that water stays above lateral connector on conduit side.
+assert(numPar.x0<(par.H-par.xbar), "Water is overflowing the bubble trap") %check that water cannot overflow
+assert( (par.ybar - par.sb/par.sc*abs(numPar.x0)) > 0.0,"") % assert that water stays above lateral connector on conduit side.
 
 switch model
     case 0
@@ -17,10 +17,10 @@ switch model
 end
 %set initial conditions
 z0= [numPar.x0;numPar.v0];
-op=odeset('RelTol',1e-10,'AbsTol',1e-12);
+op=odeset('RelTol',1e-10,'AbsTol',1e-12,'InitialStep',1e-9,'Refine',3);
 %%Solving EOM
 %pass parameters into vdot equation easily
-[ts,ys] = ode45(vdot,t,z0,op);
+[ts,ys] = ode15s(vdot,t,z0,op);
 xs = ys(:,1);vs = ys(:,2);
 
 end
