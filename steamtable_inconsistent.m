@@ -62,9 +62,11 @@ for j=1:length(Pmin)
         fprintf("Steam tables computed for pressures ranging from %f bar to %f bar \n", (P_0-Pmin(j))/1e5,(P_0+Pmax(j))/1e5);
         [freq,~]= frequency_calculator(par);
         fprintf("steam_model would predict a frequency of %f \n", freq);
+        fprintf("dPdV(%f) = %f \n \n", par.Vol_0,par.FdPdv(par.Vol_0));
     elseif (j==2)
         fprintf("Steam tables computed for pressures ranging from %f bar to %f bar\n", (P_0-Pmin(j))/1e5,(P_0+Pmax(j))/1e5);
         [freq,~]= frequency_calculator(par);
         fprintf("application_to_ofg would predict a frequency of %f \n", freq);
+        fprintf("dPdV(%f) = %f \n", par.Vol_0,par.FdPdv(par.Vol_0))
     end
 end
